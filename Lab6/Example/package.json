@@ -1,0 +1,9 @@
+{
+  "type": "module",
+  "dependencies": {
+    "async": "^3.2.5"
+  },
+  "devDependencies": {
+    "@types/async": "^3.2.23"
+  }
+}
