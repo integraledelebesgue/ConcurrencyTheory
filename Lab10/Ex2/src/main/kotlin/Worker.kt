@@ -1,3 +1,4 @@
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
 
@@ -10,8 +11,11 @@ sealed class Worker<T>(protected open val transform: (T) -> T) {
     protected lateinit var input: Channel<T>
     private val output: Channel<T> by lazy { Channel() }
 
+    val name: String
+        get() = "${this::class.simpleName} $id"
+
     suspend fun run() {
-        println(name() + " started")
+        println("$name started")
 
         action()
 
@@ -33,9 +37,15 @@ sealed class Worker<T>(protected open val transform: (T) -> T) {
         output.send(this)
     }
 
-    fun name(): String {
-        val className = this::class.simpleName
-        return "$className $id"
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun status(): String {
+        val inputState = if (this::input.isInitialized)
+            input.isEmpty.toString()
+            else "not used"
+
+        val outputState = output.isEmpty.toString()
+
+        return "[$name] input: $inputState, output: $outputState"
     }
 
     class Producer<T>(private val provider: Sequence<T>, override val transform: (T) -> T): Worker<T>(transform) {
@@ -49,7 +59,7 @@ sealed class Worker<T>(protected open val transform: (T) -> T) {
         }
 
         override fun log(current: T) {
-            println(name() + " produced item " + current)
+            println("$name produced item $current")
         }
 
         companion object: Counter()
@@ -66,7 +76,7 @@ sealed class Worker<T>(protected open val transform: (T) -> T) {
         }
 
         override fun log(current: T) {
-            println(name() + " consumed item " + current)
+            println("$name consumed item $current")
         }
 
         companion object: Counter()
@@ -83,7 +93,7 @@ sealed class Worker<T>(protected open val transform: (T) -> T) {
         }
 
         override fun log(current: T) {
-            println(name() + " processed item " + current)
+            println("$name processed item $current")
         }
 
         companion object: Counter()

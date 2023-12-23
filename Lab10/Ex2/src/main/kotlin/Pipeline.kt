@@ -2,7 +2,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
-class Pipeline<T>(
+class Pipeline<T : Any>(
     private val producer: Worker.Producer<T>,
     private val consumer: Worker.Consumer<T>,
     private vararg val processors: Worker.Processor<T>
@@ -50,10 +50,10 @@ class Pipeline<T>(
             scope.launch { worker.run() }
     }
 
-    inline fun use(crossinline block: suspend () -> Unit) {
+    inline fun use(crossinline block: suspend (p: Pipeline<out Any>) -> Unit) {
         runBlocking {
             workers.launchAll(this)
-            block()
+            block(this@Pipeline)
         }
     }
 }
