@@ -6,10 +6,15 @@ object Main {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        Executor.examplePipeline(nProcessors).use { processors ->
+        Executor.examplePipeline(nProcessors).use { pipeline ->
             coroutineScope {
                 repeat(5) {
-                    println("\n Log:\n" + processors.workers.joinToString(separator = "\n", postfix = "\n") { w -> w.status() })
+                    println(
+                        "\n Log:\n" + pipeline
+                            .workers
+                            .joinToString(separator = "\n", postfix = "\n") { w -> w.status() }
+                    )
+
                     delay(200)
                 }
             }
